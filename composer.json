@@ -1,0 +1,13 @@
+{
+    "name": "asus/tp_1",
+    "authors": [
+        {
+            "name": "hernan",
+            "email": "hernannvilar@gmail.com"
+        }
+    ],
+    "require": {
+        "namnv609/php-rest-countries": "^1.0",
+        "firebase/php-jwt": "^5.2"
+    }
+}
