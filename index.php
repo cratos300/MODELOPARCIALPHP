@@ -69,8 +69,7 @@ else if($_SERVER['REQUEST_METHOD'] == 'POST')
             }
         break;
         case '/pais':   
-        break; 
-        case '/pa':
+      
         break;
         default:
             # code...
