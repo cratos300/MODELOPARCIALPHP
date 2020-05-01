@@ -13,9 +13,8 @@ $restCountries = new RestCountries;
 
 if($_SERVER['REQUEST_METHOD'] == 'GET'){
     switch ($_SERVER['PATH_INFO']) {
-        case '/usuario':
-            //las regiones que funcionan son , ASIA OCEANIA Y AFRICA, el resto no funciona por problema del paquete.
-            # code...
+        case '/stock':
+            var_dump(json_encode(clases::listarTodos("stock.json")));
             break;
         case '/capital':
             
