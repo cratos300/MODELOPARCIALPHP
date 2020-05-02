@@ -4,6 +4,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 include_once ("./entidades/clases.php");
 include_once ("./entidades/usuario.php");
 include_once ("./entidades/productos.php");
+include_once ("./entidades/VentaUsuario.php");
 use \Firebase\JWT\JWT;
 
 
@@ -47,7 +48,7 @@ else if($_SERVER['REQUEST_METHOD'] == 'POST')
         case '/login':
             $nombre = isset($_POST['nombre']) ? $_POST['nombre'] : NULL;
             $clave = isset($_POST['clave']) ? $_POST['clave'] : NULL;
-            $user = clases::BuscarUsuario($nombre,$clave);
+            $user = clases::BuscarUsuario($nombre,$clave,"archivos.json");
             if($user!= null)
             {
                 try {
@@ -105,6 +106,61 @@ else if($_SERVER['REQUEST_METHOD'] == 'POST')
             print_r($th->getMessage());
          }
            
+        break;  
+        case '/ventas':
+            $flag = true;
+            $header = getallheaders();
+            $miToken = $header["token"] ?? '';
+            try {
+                $key = "example_key";
+                //$payload = array(
+                //"nombre" => $user->nombre,
+                //"tipo" => $user->tipo
+            //);
+            
+            if($miToken != null)
+            {
+                $decode = JWT::decode($miToken,$key,array('HS256'));
+                if($decode->tipo == "usuario")
+                {
+                    $id = isset($_POST['id_producto']) ? $_POST['id_producto'] : NULL;
+                    $cantidad = isset($_POST['cantidad']) ? $_POST['cantidad'] : NULL;
+                    $usuario = isset($_POST['usuario']) ? $_POST['usuario'] : NULL;
+                    $resultado = clases::BuscarId($id,"stock.json");
+                    if($resultado != null)
+                    {
+                        if($resultado->stock >= $cantidad)
+                        {
+                            $unaVenta = new VentaUsuario($id,$cantidad,$usuario,$resultado->precio,($cantidad*$resultado->precio));
+                            var_dump($unaVenta);
+                            clases::Serializarr($unaVenta,"ventas.txt");
+                            $devuelta = clases::ModificarStock("stock.json",$id,$cantidad);
+                            if($devuelta >0)
+                            {
+                                echo "Se modifico correctamente";
+                            }
+                            else
+                            {
+                                echo "No se modifico correctamente";
+                            }
+                        }
+                        else
+                        {
+                            echo "Error, no hay stock suficiente";
+                        }
+                    }
+                }
+                else{
+                    echo "no es usuario";
+                }     
+            }
+            else{
+                print_r("debe ingresar un token ");
+            }
+        }
+            catch (\Throwable $th) {
+                print_r($th->getMessage());
+             }
         break;
         default:
             # code...

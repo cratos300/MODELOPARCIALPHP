@@ -26,9 +26,9 @@ class clases
         fclose($archivo);
         return json_decode($dato);
     }
-    public static function BuscarUsuario($nombre,$clave){
+    public static function BuscarUsuario($nombre,$clave,$path){
         $Nuevo_Usuario = null;
-        $lista = clases::listarTodos();
+        $lista = clases::listarTodos($path);
         foreach ($lista as $key => $value) {
             if($value->nombre ==  $nombre &&  $value->clave == $clave){
                 $Nuevo_Usuario = new usuario($value->nombre,$value->dni,$value->obra_social,$value->clave,$value->tipo,$value->id);
@@ -45,4 +45,77 @@ class clases
         move_uploaded_file($origen,$destino);
         clases::Guardar($usuario,"stock.json");
     }
+    public static function BuscarID($id,$path)
+    {
+        $productos = clases::listarTodos($path);
+        $encontrado = null;
+        for($i=0;$i<count($productos);$i++)
+        {
+            if($productos[$i]->id == $id)
+            {
+                $encontrado = $productos[$i];
+                break;
+            }
+        }
+        return $encontrado;
+    }
+    public static  function Serializarr($obj,$path)
+    {
+        //serializar
+        $objetos = array();
+        $objetos = clases::Deserializarr($path);
+        if($objetos == null)
+        {
+            $objetos[0] = $obj;
+            $serializado = serialize($objetos);
+            $file = fopen("./entidades/".$path,"w");
+            $rsta = fwrite($file,$serializado);
+        }
+        else
+        {
+            array_push($objetos,$obj);
+            $serializado = serialize($objetos);
+            $file = fopen("./entidades/".$path,"w");
+            $rsta = fwrite($file,$serializado);
+            fclose($file);
+        }
+            
+        
+    }
+    public static function Deserializarr($path)
+    {
+        $listadoVentas = null;
+        $file = fopen("./entidades/".$path,"r");
+        if(filesize("./entidades/".$path) > 0)
+        {
+            $rsta = fread($file,filesize("./entidades/".$path));
+            $listadoVentas = unserialize($rsta);
+        }
+         
+        return $listadoVentas;
+    }
+    public static function ModificarStock($path,$id,$cantidad)
+    {
+        $flag = -1;
+        $objetos = clases::listarTodos($path);
+     for($i=0;$i<count($objetos);$i++)
+     {
+        if($objetos[$i]->id == $id)
+        {
+            $objetos[$i]->stock = $objetos[$i]->stock - $cantidad;
+        break;
+        }
+     }
+    
+     $archivo = fopen("./entidades/".$path,"w");
+     $json_string = json_encode($objetos);
+        //$cant = fwrite($archivo,$nombre. "-". $apellido. "-" .$legajo. PHP_EOL);
+         $cant = fwrite($archivo,$json_string);
+         if($cant > 0)
+         {
+             $flag = 1;
+         }
+        return $flag;
+    }
+
 }
